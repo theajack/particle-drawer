@@ -4,10 +4,33 @@
  * @Description: Coding something
  */
 
-import main from '../../src/index';
+import {ParticleDrawer} from '../../src/index';
+import {css, style} from 'alins-style';
 
-const win = (window as any);
+css('body')(
+    style.padding(0).margin(0),
+).mount();
 
-win.main = main;
 
-console.log(main.content + '3322');
+const drawer = new ParticleDrawer({
+    width: window.innerWidth,
+    height: window.innerHeight,
+});
+
+const input = document.getElementById('input') as HTMLInputElement;
+
+input?.addEventListener('change', () => {
+    const file = (input as any).files[0];
+    // console.log();
+    drawer.draw(file);
+});
+
+(window as any).drawer = drawer;
+
+let timer: any = null;
+window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+        drawer.setSize(window.innerWidth, window.innerHeight);
+    }, 500);
+});

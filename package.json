@@ -53,5 +53,9 @@
     },
     "publishConfig": {
         "registry": "https://registry.npmjs.org"
+    },
+    "dependencies": {
+        "alins": "^0.0.18",
+        "alins-style": "^0.0.18"
     }
 }
