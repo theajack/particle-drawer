@@ -49,13 +49,11 @@
         "rollup-plugin-uglify": "^6.0.4",
         "serve": "^13.0.2",
         "single-line-log": "^1.1.2",
-        "typescript": "^4.7.4"
+        "typescript": "^4.7.4",
+        "alins": "^0.0.18",
+        "alins-style": "^0.0.18"
     },
     "publishConfig": {
         "registry": "https://registry.npmjs.org"
-    },
-    "dependencies": {
-        "alins": "^0.0.18",
-        "alins-style": "^0.0.18"
     }
 }

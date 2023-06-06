@@ -30,15 +30,36 @@ export function degToArc (deg: number) {
 
 export const DPR = window.devicePixelRatio;
 
-export function createImage (file: File, width: number, height: number): Promise<HTMLImageElement> {
+export function createImage (file: File): Promise<HTMLImageElement> {
     return new Promise(resolve => {
         const imgSrc = window.URL.createObjectURL(file);// 获取file文件路径
         const img = new Image();
-        img.width = width;
-        img.height = height;
         img.src = imgSrc;
         img.onload = () => {
             resolve(img);
         };
     });
+}
+
+export function adapteSize ({
+    width, height, containerWidth, containerHeight
+}:{
+    width: number, height: number,
+    containerWidth: number, containerHeight: number,
+}) {
+    console.log(width, height, containerWidth, containerHeight);
+    const cRate = containerWidth / containerHeight;
+    const rate = width / height;
+    const result = {width, height, left: 0, top: 0};
+    if (cRate > rate) {
+        result.height = containerHeight;
+        result.width = rate * result.height;
+        result.left = (containerWidth - result.width) / 2;
+    } else {
+        result.width = containerWidth;
+        result.height = result.width / rate;
+        result.top = (containerHeight - result.height) / 2;
+    }
+    console.log(result);
+    return result;
 }

@@ -5,25 +5,13 @@
  */
 
 import {ParticleDrawer} from '../../src/index';
-import {css, style} from 'alins-style';
-
-css('body')(
-    style.padding(0).margin(0),
-).mount();
-
+import {renderUI} from './ui';
 
 const drawer = new ParticleDrawer({
     width: window.innerWidth,
     height: window.innerHeight,
 });
 
-const input = document.getElementById('input') as HTMLInputElement;
-
-input?.addEventListener('change', () => {
-    const file = (input as any).files[0];
-    // console.log();
-    drawer.draw(file);
-});
 
 (window as any).drawer = drawer;
 
@@ -34,3 +22,5 @@ window.addEventListener('resize', () => {
         drawer.setSize(window.innerWidth, window.innerHeight);
     }, 500);
 });
+
+renderUI(drawer);

@@ -1,5 +1,5 @@
 import {Particle} from './particle';
-import {countRadius, createImage, DPR} from './utils';
+import {adapteSize, countRadius, createImage, DPR} from './utils';
 
 /*
  * @Author: chenzhongsheng
@@ -19,7 +19,6 @@ export class ParticleDrawer {
 
     radius: number;
 
-
     particles: Particle[] = [];
 
     fillColor = '#55555555';
@@ -38,12 +37,18 @@ export class ParticleDrawer {
         width = 500,
         height = 800,
         particleRadius,
+        textGap,
+        imgGap,
+        textFillColor,
     }: {
         container?: string | Element,
         width?: number,
         height?: number,
         particleRadius?: number,
-    }) {
+        textGap?: number,
+        textFillColor?: string,
+        imgGap?: number,
+    } = {}) {
         if (typeof container === 'string') {
             const el = document.querySelector(container);
             if (!el) throw new Error(`Cannot find container ${el}`);
@@ -57,9 +62,11 @@ export class ParticleDrawer {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         if (particleRadius) this.particleRadius = particleRadius;
+        if (textGap) this.textGap = textGap;
+        if (imgGap) this.imgGap = imgGap;
+        if (textFillColor) this.fillColor = textFillColor;
         container.appendChild(this.canvas);
 
-        this.ctx.fillStyle = this.fillColor;
 
         this.setSize(width, height);
 
@@ -120,15 +127,22 @@ export class ParticleDrawer {
     }
 
     private drawText (content: string) {
+        this.ctx.fillStyle = this.fillColor;
+
         const ctx = this.offscreenCtx;
         const textData = ctx.measureText(content);
         ctx.fillText(content, ((this.width * DPR - textData.width) / 2), (this.height / 2) * DPR);
     }
     private async drawImage (file: File) {
         const ctx = this.offscreenCtx;
-        const {width, height} = this.offscreenCanvas;
-        const img = await createImage(file, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
+        const img = await createImage(file);
+        const {left, top, width, height} = adapteSize({
+            width: img.width,
+            height: img.height,
+            containerWidth: this.canvas.width,
+            containerHeight: this.canvas.height,
+        });
+        ctx.drawImage(img, left, top, width, height);
     }
 
     private getParticle (index: number) {
