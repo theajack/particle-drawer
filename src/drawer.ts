@@ -1,5 +1,5 @@
 import {Particle} from './particle';
-import {adapteSize, countRadius, createImage, DPR} from './utils';
+import {adapteSize, countRadius, createImage, DPR, getDrawType} from './utils';
 
 /*
  * @Author: chenzhongsheng
@@ -25,6 +25,7 @@ export class ParticleDrawer {
 
     textGap = 5;
     imgGap = 10;
+    interval = 1000;
     private _particleRadius = 2;
     get particleRadius () {return this._particleRadius;};
     set particleRadius (value: number) {
@@ -40,6 +41,7 @@ export class ParticleDrawer {
         textGap,
         imgGap,
         textFillColor,
+        interval,
     }: {
         container?: string | Element,
         width?: number,
@@ -48,6 +50,7 @@ export class ParticleDrawer {
         textGap?: number,
         textFillColor?: string,
         imgGap?: number,
+        interval?: number,
     } = {}) {
         if (typeof container === 'string') {
             const el = document.querySelector(container);
@@ -65,6 +68,7 @@ export class ParticleDrawer {
         if (textGap) this.textGap = textGap;
         if (imgGap) this.imgGap = imgGap;
         if (textFillColor) this.fillColor = textFillColor;
+        if (interval) this.interval = interval;
         container.appendChild(this.canvas);
 
 
@@ -101,11 +105,27 @@ export class ParticleDrawer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    async draw (content: string|File) {
+    async draw (content: string|string[]|File) {
         const ctx = this.offscreenCtx;
         ctx.clearRect(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
-        const isText = typeof content === 'string';
-        isText ? this.drawText(content) : await this.drawImage(content);
+        const type = getDrawType(content);
+        switch (type) {
+            case 'text':
+                this.drawText(content as string|string[]);
+                this.movePoints(true); break;
+            case 'image':
+                await this.drawImage(content as File);
+                this.movePoints(); break;
+            case 'video':
+                await this.drawImage(content as File);
+                this.movePoints(); break;
+            case 'gif':
+                await this.drawImage(content as File);
+                this.movePoints(); break;
+        }
+    }
+
+    private movePoints (isText: boolean = false) {
         const points = this.getPoints(isText);
         points.forEach((point, index) => {
             this.getParticle(index).moveTo({
@@ -117,6 +137,13 @@ export class ParticleDrawer {
         this.sleepUnusedParticles(points.length);
     }
 
+    private async drawVideo () {
+        
+    }
+    private async drawGif () {
+        
+    }
+
     private sleepUnusedParticles (pointLength: number) {
         const n = this.particles.length;
         if (pointLength < n) {
@@ -126,14 +153,24 @@ export class ParticleDrawer {
         }
     }
 
-    private drawText (content: string) {
+    private drawText (content: string|string[]) {
         this.ctx.fillStyle = this.fillColor;
+        if (typeof content === 'string') {
+            content = [content];
+        }
+
+        for (const text of content) {
+            
+        }
 
         const ctx = this.offscreenCtx;
         const textData = ctx.measureText(content);
         ctx.fillText(content, ((this.width * DPR - textData.width) / 2), (this.height / 2) * DPR);
     }
     private async drawImage (file: File) {
+        if (!['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
+            throw new Error('Please choose a image');
+        }
         const ctx = this.offscreenCtx;
         const img = await createImage(file);
         const {left, top, width, height} = adapteSize({

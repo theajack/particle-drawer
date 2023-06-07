@@ -5,8 +5,17 @@
  */
 
 import {css, style} from 'alins-style';
-import {button, div, input, span, $, IReactItem, click, change, textarea, mounted} from 'alins';
+import {button, div, input, span, $, IReactItem, click, change, mounted} from 'alins';
 import {ParticleDrawer} from '../../src/index';
+
+let interval: any;
+function clearTimer () {
+    clearInterval(interval);
+}
+function registTimer (fn: ()=>void, time = 1000) {
+    clearTimer();
+    interval = setInterval(fn, time);
+}
 
 css('body')(
     style.padding(0).margin(0).overflow('hidden'),
@@ -14,6 +23,7 @@ css('body')(
         style(`
         margin: 10px 0;
         `),
+        ['&.func-box', style.borderTop('1px solid #ddd').paddingTop(10)],
         ['.input-title', style(`
             display: inline-block;
             width: 120px;
@@ -27,16 +37,19 @@ css('body')(
             vertical-align: text-top;
         `)],
     ],
-    ['.btn', style({
-        backgroundColor: 'rgb(28,195,255)',
-        padding: '8px 10px',
-        outline: 'none',
-        border: 'none',
-        borderRadius: 3,
-        fontSize: 16,
-        color: 'white',
-        cursor: 'pointer',
-    })]
+    [
+        '.btn', style({
+            backgroundColor: 'rgb(28,195,255)',
+            padding: '4px 6px',
+            outline: 'none',
+            border: 'none',
+            borderRadius: 3,
+            fontSize: 14,
+            color: 'white',
+            cursor: 'pointer',
+        }),
+        ['&.large', style.padding('8px 10px').fontSize(16)]
+    ]
 ).mount();
 
 // const input = document.getElementById('input') as HTMLInputElement;
@@ -55,7 +68,7 @@ export function renderUI (drawer: ParticleDrawer) {
         '.container',
         style.position('fixed').right(10).top(10),
         [
-            button.show(() => !showPanel.value)('.btn:Open Panel',
+            button.show(() => !showPanel.value)('.btn.large:Open Panel',
                 click(() => {showPanel.value = !showPanel.value;})
             ),
             panel(drawer, showPanel),
@@ -65,7 +78,6 @@ export function renderUI (drawer: ParticleDrawer) {
 
 function panel (drawer: ParticleDrawer, showPanel: IReactItem) {
 
-    const content = $('');
 
     return div.show(showPanel)('.panel',
         style({
@@ -81,10 +93,11 @@ function panel (drawer: ParticleDrawer, showPanel: IReactItem) {
         attributeBox('textGap', drawer),
         attributeBox('imgGap', drawer),
         attributeBox('particleRadius', drawer),
-        contentBox(content),
-        imageBox(file => {
-            console.log(file);
-        }),
+        contentBox(drawer),
+        imageBox(drawer),
+
+        funcArea(drawer),
+        
 
         span('.close:×',
             style({
@@ -115,19 +128,27 @@ function attributeBox (title: string, drawer: ParticleDrawer) {
     );
 }
 
-function contentBox (model: IReactItem) {
-    return div('.input-item',
+function contentBox (draw: ParticleDrawer) {
+    const content = $('Hello World!');
+    return div('.input-item.func-box',
         span('.input-title[placeholder=Input Something]:Draw Content'),
-        input.model(model)(`.input-el]`)
+        input.model(content)(`.input-el]`),
+        btnBox('Draw Text', () => {
+            clearTimer();
+            draw.draw(content.value);
+        })
     );
 }
 
-function imageBox (onchange: (file: File)=>void) {
+function imageBox (draw: ParticleDrawer) {
     let inputEl: HTMLInputElement;
-    const fileName = $('Click to Choose');
-    return div('.input-item',
+    const fileName = $('Draw Image');
+    return div('.input-item.func-box',
         span('.input-title:Choose Image'),
-        button('.btn', fileName, click((e) => {
+        button('.btn', fileName, click(() => {
+            // @ts-ignore
+            if (inputEl?.files) inputEl.files.length = 0;
+            fileName.value = 'Draw Image';
             inputEl.click();
         })),
         input('.input-el[type=file]',
@@ -138,9 +159,33 @@ function imageBox (onchange: (file: File)=>void) {
             }),
             change(e => {
                 const file = e.target.files[0];
-                if (!file) throw new Error('No File choosed');
-                onchange(file);
+                if (!file) {return;}
+                fileName.value = file.name;
+                clearTimer();
+                try {
+                    draw.draw(file);
+                } catch (e) {
+                    alert('Please choose a image');
+                }
             })
-        )
+        ),
+    );
+}
+
+function funcArea (drawer: ParticleDrawer) {
+    return div('.input-item.func-box',
+        style.textAlign('center').marginTop(10),
+        button(`.btn:Clock`, click(() => {
+            const fn = () => {drawer.draw(new Date().toLocaleString().substring(9));};
+            fn();
+            registTimer(fn, 1000);
+        }))
+    );
+}
+
+function btnBox (text: string, onclick: ()=>void) {
+    return div(
+        style.textAlign('center').marginTop(10),
+        button(`.btn:${text}`, click(onclick))
     );
 }

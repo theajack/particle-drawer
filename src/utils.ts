@@ -63,3 +63,17 @@ export function adapteSize ({
     console.log(result);
     return result;
 }
+
+export function getDrawType (content: string[]|string|File): 'text'|'image'|'gif'|'video' {
+    if (typeof content === 'string' || content instanceof Array) return 'text';
+    const type = content.type;
+    if (['image/jpeg', 'image/png', 'image/jpg'].includes(type)) {
+        return 'image';
+    }
+    if (type === 'image/gif') return 'gif';
+
+    if (['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'].includes(type)) {
+        return 'video';
+    }
+    throw new Error(`Invalid file type: ${type}`);
+}
