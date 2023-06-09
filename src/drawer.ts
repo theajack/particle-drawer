@@ -1,5 +1,6 @@
+import {DrawInterval} from './draw-interval';
 import {Particle} from './particle';
-import {adapteSize, countRadius, createImage, DPR, getDrawType} from './utils';
+import {adapteSize, checkType, countRadius, createImage, DPR, getDrawType, IDrawType} from './utils';
 
 /*
  * @Author: chenzhongsheng
@@ -25,7 +26,6 @@ export class ParticleDrawer {
 
     textGap = 5;
     imgGap = 10;
-    interval = 1000;
     private _particleRadius = 2;
     get particleRadius () {return this._particleRadius;};
     set particleRadius (value: number) {
@@ -39,6 +39,10 @@ export class ParticleDrawer {
         this._fontSize = value;
         this.offscreenCtx.font = `${value * DPR}px 'monospace'`;
     }
+
+    drawInterval: DrawInterval;
+    get interval () {return this.drawInterval.time;};
+    set interval (time: number) {this.drawInterval.setTime(time);}
 
     lineGap = 10;
 
@@ -75,9 +79,9 @@ export class ParticleDrawer {
         if (textGap) this.textGap = textGap;
         if (imgGap) this.imgGap = imgGap;
         if (textFillColor) this.fillColor = textFillColor;
-        if (interval) this.interval = interval;
         if (fontSize) this._fontSize = fontSize;
         if (lineGap) this.lineGap = lineGap;
+        this.drawInterval = new DrawInterval(interval);
 
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -124,22 +128,22 @@ export class ParticleDrawer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    async draw (content: string|string[]|File) {
+    async draw (content: string|string[]|File, drawType?: IDrawType) {
         const ctx = this.offscreenCtx;
         ctx.clearRect(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
-        const type = getDrawType(content);
+        const type = getDrawType(content, drawType);
         switch (type) {
             case 'text':
                 this.drawText(content as string|string[]);
                 this.movePoints(true); break;
             case 'image':
-                await this.drawImage(content as File);
+                await this.drawImage(content as string|File);
                 this.movePoints(); break;
             case 'video':
-                await this.drawImage(content as File);
+                await this.drawVideo(content as string|File);
                 this.movePoints(); break;
             case 'gif':
-                await this.drawImage(content as File);
+                await this.drawGif(content as string|File);
                 this.movePoints(); break;
         }
     }
@@ -154,13 +158,6 @@ export class ParticleDrawer {
             });
         });
         this.sleepUnusedParticles(points.length);
-    }
-
-    private async drawVideo () {
-        
-    }
-    private async drawGif () {
-        
     }
 
     private sleepUnusedParticles (pointLength: number) {
@@ -202,19 +199,39 @@ export class ParticleDrawer {
             ctx.fillText(text, x, y);
         });
     }
-    private async drawImage (file: File) {
-        if (!['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
-            throw new Error('Please choose a image');
-        }
-        const ctx = this.offscreenCtx;
+    private async drawImage (file: string|File) {
+        checkType(file, ['image/jpeg', 'image/png', 'image/jpg', 'image/gif']);
         const img = await createImage(file);
-        const {left, top, width, height} = adapteSize({
+        const size = adapteSize({
             width: img.width,
             height: img.height,
             containerWidth: this.canvas.width,
             containerHeight: this.canvas.height,
         });
-        ctx.drawImage(img, left, top, width, height);
+        this.drawAssets(img, size);
+    }
+
+    private async drawVideo (file: string|File) {
+        checkType(file, ['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg']);
+    }
+    private async drawGif (file: string|File) {
+        checkType(file, ['image/gif']);
+        debugger;
+        const img = await createImage(file);
+        document.body.appendChild(img);
+        const size = adapteSize({
+            width: img.width,
+            height: img.height,
+            containerWidth: this.canvas.width,
+            containerHeight: this.canvas.height,
+        });
+        this.drawInterval.start(() => {
+            this.drawAssets(img, size);
+        });
+    }
+
+    private drawAssets (dom: any, s: any) {
+        this.offscreenCtx.drawImage(dom, s.left, s.top, s.width, s.height);
     }
 
     private getParticle (index: number) {

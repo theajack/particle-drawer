@@ -30,16 +30,32 @@ export function degToArc (deg: number) {
 
 export const DPR = window.devicePixelRatio;
 
-export function createImage (file: File): Promise<HTMLImageElement> {
+export function createImage (file: string|File): Promise<HTMLImageElement> {
     return new Promise(resolve => {
-        const imgSrc = window.URL.createObjectURL(file);// 获取file文件路径
         const img = new Image();
-        img.src = imgSrc;
+        img.src = createSrc(file);
         img.onload = () => {
             resolve(img);
         };
     });
 }
+
+function createSrc (file: string|File) {
+    return typeof file === 'string' ? file : window.URL.createObjectURL(file);// 获取file文件路径
+}
+
+export function createVideo (file: File): Promise<HTMLVideoElement> {
+    return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.muted = true;
+        video.autoplay = true;
+        video.src = createSrc(file);
+        video.addEventListener('canplay', () => {
+            resolve(video);
+        });
+    });
+}
+
 
 export function adapteSize ({
     width, height, containerWidth, containerHeight
@@ -47,7 +63,7 @@ export function adapteSize ({
     width: number, height: number,
     containerWidth: number, containerHeight: number,
 }) {
-    console.log(width, height, containerWidth, containerHeight);
+    // console.log(width, height, containerWidth, containerHeight);
     const cRate = containerWidth / containerHeight;
     const rate = width / height;
     const result = {width, height, left: 0, top: 0};
@@ -64,7 +80,10 @@ export function adapteSize ({
     return result;
 }
 
-export function getDrawType (content: string[]|string|File): 'text'|'image'|'gif'|'video' {
+export type IDrawType = 'text'|'image'|'gif'|'video';
+
+export function getDrawType (content: string[]|string|File, drawType?: IDrawType): IDrawType {
+    if (drawType) return drawType;
     if (typeof content === 'string' || content instanceof Array) return 'text';
     const type = content.type;
     if (['image/jpeg', 'image/png', 'image/jpg'].includes(type)) {
@@ -76,4 +95,10 @@ export function getDrawType (content: string[]|string|File): 'text'|'image'|'gif
         return 'video';
     }
     throw new Error(`Invalid file type: ${type}`);
+}
+
+export function checkType (file: string|File, mimeTypes: string[]) {
+    if (typeof file !== 'string' && !mimeTypes.includes(file.type)) {
+        throw new Error('Please choose Right file type');
+    }
 }

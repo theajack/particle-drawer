@@ -95,6 +95,7 @@ function panel (drawer: ParticleDrawer, showPanel: IReactItem) {
         attributeBox('particleRadius', drawer),
         contentBox(drawer),
         imageBox(drawer),
+        imageBox(drawer, 'gif'),
 
         funcArea(drawer),
         
@@ -148,15 +149,15 @@ function contentBox (draw: ParticleDrawer) {
     );
 }
 
-function imageBox (draw: ParticleDrawer) {
+function imageBox (draw: ParticleDrawer, type = 'image') {
     let inputEl: HTMLInputElement;
-    const fileName = $('Draw Image');
+    const fileName = $(`Draw ${type}`);
     return div('.input-item.func-box',
         span('.input-title:Choose Image'),
         button('.btn', fileName, click(() => {
             // @ts-ignore
             if (inputEl?.files) inputEl.files.length = 0;
-            fileName.value = 'Draw Image';
+            fileName.value = `Draw ${type}`;
             inputEl.click();
         })),
         input('.input-el[type=file]',
@@ -173,7 +174,7 @@ function imageBox (draw: ParticleDrawer) {
                 try {
                     draw.draw(file);
                 } catch (e) {
-                    alert('Please choose a image');
+                    alert(`Please choose a ${type}`);
                 }
             })
         ),
