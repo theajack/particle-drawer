@@ -156,8 +156,7 @@ function imageBox (draw: ParticleDrawer) {
     return div('.input-item.func-box',
         span('.input-title:Choose Image'),
         button('.btn', fileName, click(() => {
-            // @ts-ignore
-            if (inputEl?.files) inputEl.files.length = 0;
+            inputEl.value = '';
             fileName.value = 'Draw Image';
             inputEl.click();
         })),
