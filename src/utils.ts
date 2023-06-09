@@ -30,9 +30,9 @@ export function degToArc (deg: number) {
 
 export const DPR = window.devicePixelRatio;
 
-export function createImage (file: File): Promise<HTMLImageElement> {
+export function createImage (file: File|string): Promise<HTMLImageElement> {
     return new Promise(resolve => {
-        const imgSrc = window.URL.createObjectURL(file);// 获取file文件路径
+        const imgSrc = typeof file === 'string' ? file : window.URL.createObjectURL(file);// 获取file文件路径
         const img = new Image();
         img.src = imgSrc;
         img.onload = () => {
@@ -64,16 +64,12 @@ export function adapteSize ({
     return result;
 }
 
-export function getDrawType (content: string[]|string|File): 'text'|'image'|'gif'|'video' {
+export function getDrawType (content: string[]|string|File, isImage?: boolean): 'text'|'image' {
+    if (isImage) return 'image';
     if (typeof content === 'string' || content instanceof Array) return 'text';
     const type = content.type;
-    if (['image/jpeg', 'image/png', 'image/jpg'].includes(type)) {
+    if (['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(type)) {
         return 'image';
-    }
-    if (type === 'image/gif') return 'gif';
-
-    if (['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'].includes(type)) {
-        return 'video';
     }
     throw new Error(`Invalid file type: ${type}`);
 }

@@ -89,7 +89,9 @@ function panel (drawer: ParticleDrawer, showPanel: IReactItem) {
             padding: 10,
         }),
 
-        attributeBox('fillColor', drawer),
+        attributeBox('textFillColor', drawer),
+        attributeBox('fontSize', drawer),
+        attributeBox('lineGap', drawer),
         attributeBox('textGap', drawer),
         attributeBox('imgGap', drawer),
         attributeBox('particleRadius', drawer),
@@ -129,7 +131,7 @@ function attributeBox (title: string, drawer: ParticleDrawer) {
 }
 
 function contentBox (draw: ParticleDrawer) {
-    const content = $('Hello World!');
+    const content = $('Hello World!\nBe Happy!');
     return div('.input-item.func-box',
         span('.input-title[placeholder=Input Something]:Draw Content'),
         textarea.model(content)(`.input-el]`, style({

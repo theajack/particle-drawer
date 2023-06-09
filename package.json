@@ -1,19 +1,19 @@
 {
-    "name": "ebuild-rollup",
+    "name": "particle-drawer",
     "version": "0.0.1",
-    "description": "ebuild-demo",
-    "repository": "git@github.com:theajack/ebuild-template-rollup.git",
+    "description": "Draw text or pictures with particles.",
+    "repository": "git@github.com:theajack/particle-drawer.git",
     "author": "tackchen <theajack@qq.com>",
-    "main": "ebuild-demo.min.js",
-    "unpkg": "ebuild-demo.min.js",
-    "jsdelivr": "ebuild-demo.min.js",
-    "typings": "ebuild-demo.min.d.ts",
+    "main": "particle-drawer.min.js",
+    "unpkg": "particle-drawer.min.js",
+    "jsdelivr": "particle-drawer.min.js",
+    "typings": "particle-drawer.min.d.ts",
     "scripts": {
         "lint": "eslint --fix --ext .js --ext .ts scripts src",
         "dev": "node scripts/dev/dev.js",
         "build": "node scripts/build/build.js",
         "dev:docs": "node scripts/docs/dev.js",
-        "build:docs": "node scripts/docs/build.js",
+        "build:docs": "node scripts/build/build-docs.js",
         "purge": "node scripts/purge-cdn.js",
         "release": "node scripts/push-release.js",
         "publish": "node scripts/publish.js"
@@ -21,9 +21,9 @@
     "keywords": [],
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/theajack/ebuild-template-rollup/issues"
+        "url": "https://github.com/theajack/particle-drawer/issues"
     },
-    "homepage": "https://shiyix.cn/jsbox/?github=theajack.ebuild-template-rollup",
+    "homepage": "https://shiyix.cn/particle-drawer",
     "devDependencies": {
         "@babel/core": "^7.18.5",
         "@babel/preset-env": "^7.18.2",

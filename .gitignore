@@ -5,5 +5,4 @@ node_modules
 /npm
 bundle.js
 bundle.js.map
-/docs
 .DS_Store

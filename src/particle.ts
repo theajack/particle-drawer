@@ -59,7 +59,7 @@ export class Particle {
         color?: string,
         onend?: ()=>void
     }) {
-        this.color = color || this.drawer.fillColor;
+        this.color = color || this.drawer.textFillColor;
         this.isActive = true;
         const sx = this.x;
         const sy = this.y;

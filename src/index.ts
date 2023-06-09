@@ -4,3 +4,7 @@
  * @Description: Coding something
  */
 export * from './drawer';
+
+import {ParticleDrawer} from './drawer';
+
+export default ParticleDrawer;

@@ -21,11 +21,10 @@ export class ParticleDrawer {
 
     particles: Particle[] = [];
 
-    fillColor = '#55555555';
+    textFillColor = '#55555555';
 
     textGap = 5;
     imgGap = 10;
-    interval = 1000;
     private _particleRadius = 2;
     get particleRadius () {return this._particleRadius;};
     set particleRadius (value: number) {
@@ -50,7 +49,6 @@ export class ParticleDrawer {
         textGap,
         imgGap,
         textFillColor,
-        interval,
         fontSize,
         lineGap,
     }: {
@@ -61,7 +59,6 @@ export class ParticleDrawer {
         textGap?: number,
         textFillColor?: string,
         imgGap?: number,
-        interval?: number,
         fontSize?: number,
         lineGap?: number,
     } = {}) {
@@ -74,8 +71,7 @@ export class ParticleDrawer {
         if (particleRadius) this.particleRadius = particleRadius;
         if (textGap) this.textGap = textGap;
         if (imgGap) this.imgGap = imgGap;
-        if (textFillColor) this.fillColor = textFillColor;
-        if (interval) this.interval = interval;
+        if (textFillColor) this.textFillColor = textFillColor;
         if (fontSize) this._fontSize = fontSize;
         if (lineGap) this.lineGap = lineGap;
 
@@ -124,22 +120,16 @@ export class ParticleDrawer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    async draw (content: string|string[]|File) {
+    async draw (content: string|string[]|File, isImage?: boolean) {
         const ctx = this.offscreenCtx;
         ctx.clearRect(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
-        const type = getDrawType(content);
+        const type = getDrawType(content, isImage);
         switch (type) {
             case 'text':
                 this.drawText(content as string|string[]);
                 this.movePoints(true); break;
             case 'image':
-                await this.drawImage(content as File);
-                this.movePoints(); break;
-            case 'video':
-                await this.drawImage(content as File);
-                this.movePoints(); break;
-            case 'gif':
-                await this.drawImage(content as File);
+                await this.drawImage(content as string|File);
                 this.movePoints(); break;
         }
     }
@@ -156,12 +146,12 @@ export class ParticleDrawer {
         this.sleepUnusedParticles(points.length);
     }
 
-    private async drawVideo () {
+    // private async drawVideo () {
         
-    }
-    private async drawGif () {
+    // }
+    // private async drawGif () {
         
-    }
+    // }
 
     private sleepUnusedParticles (pointLength: number) {
         const n = this.particles.length;
@@ -173,19 +163,13 @@ export class ParticleDrawer {
     }
 
     private drawText (content: string|string[]) {
-        this.ctx.fillStyle = this.fillColor;
+        this.ctx.fillStyle = this.textFillColor;
         const ctx = this.offscreenCtx;
         if (typeof content === 'string') {
             content = [content];
         }
 
         const lintHeight = (this._fontSize + this.lineGap) * DPR;
-
-        // const textData = ctx.measureText(content[0]);
-
-        // textData.
-
-        // const startY = content.length;
 
         // ! 最后+lineHegit 是因为绘制方式是 textBaseline=middle
         const startY = ((this.height * DPR) - (content.length * lintHeight) - this.lineGap * DPR + lintHeight) / 2;
@@ -202,8 +186,8 @@ export class ParticleDrawer {
             ctx.fillText(text, x, y);
         });
     }
-    private async drawImage (file: File) {
-        if (!['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
+    private async drawImage (file: string|File) {
+        if (typeof file !== 'string' && !['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
             throw new Error('Please choose a image');
         }
         const ctx = this.offscreenCtx;

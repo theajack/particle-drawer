@@ -22,7 +22,7 @@ const inputFile = resolveRootPath('src/index.ts');
 
 async function builddts ({
     input = inputFile,
-    output = resolveRootPath('npm/ebuild-demo.min.d.ts'),
+    output = resolveRootPath('npm/particle-drawer.min.d.ts'),
 } = {}) {
     await buildBase({
         inputOptions: {
@@ -38,10 +38,10 @@ async function builddts ({
 
 async function build ({
     input = inputFile,
-    output = resolveRootPath('npm/ebuild-demo.min.js'),
+    output = resolveRootPath('npm/particle-drawer.min.js'),
     format = 'umd',
     external = packageInfo.external,
-    name = 'EbuildDemo',
+    name = 'ParticleDrawer',
 } = {}) {
     const inputOptions = {
         input: transfromFilePath(input), // 唯一必填参数
