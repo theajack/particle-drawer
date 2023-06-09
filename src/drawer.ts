@@ -33,6 +33,15 @@ export class ParticleDrawer {
         this.particles.forEach(p => {p.radius = value;});
     }
 
+    private _fontSize = 100;
+    get fontSize () {return this._fontSize;};
+    set fontSize (value: number) {
+        this._fontSize = value;
+        this.offscreenCtx.font = `${value * DPR}px 'monospace'`;
+    }
+
+    lineGap = 10;
+
     constructor ({
         container = document.body,
         width = 500,
@@ -42,6 +51,8 @@ export class ParticleDrawer {
         imgGap,
         textFillColor,
         interval,
+        fontSize,
+        lineGap,
     }: {
         container?: string | Element,
         width?: number,
@@ -51,33 +62,42 @@ export class ParticleDrawer {
         textFillColor?: string,
         imgGap?: number,
         interval?: number,
+        fontSize?: number,
+        lineGap?: number,
     } = {}) {
         if (typeof container === 'string') {
             const el = document.querySelector(container);
             if (!el) throw new Error(`Cannot find container ${el}`);
             container = el;
         }
-        this.offscreenCanvas = document.createElement('canvas');
-        this.offscreenCtx = this.offscreenCanvas.getContext('2d', {
-            willReadFrequently: true,
-        }) as CanvasRenderingContext2D;
 
-        this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         if (particleRadius) this.particleRadius = particleRadius;
         if (textGap) this.textGap = textGap;
         if (imgGap) this.imgGap = imgGap;
         if (textFillColor) this.fillColor = textFillColor;
         if (interval) this.interval = interval;
+        if (fontSize) this._fontSize = fontSize;
+        if (lineGap) this.lineGap = lineGap;
+
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         container.appendChild(this.canvas);
 
+        this._initOffscreenCanvas();
 
         this.setSize(width, height);
-
 
         this.loop();
 
         this.particles.push(new Particle(this));
+    }
+
+    private _initOffscreenCanvas () {
+        this.offscreenCanvas = document.createElement('canvas');
+        this.offscreenCtx = this.offscreenCanvas.getContext('2d', {
+            willReadFrequently: true,
+        }) as CanvasRenderingContext2D;
+
     }
 
     private loop () {
@@ -96,8 +116,7 @@ export class ParticleDrawer {
         this.radius = countRadius(width, height, this.particleRadius);
 
         this.offscreenCtx.fillStyle = '#000';
-        // this.offscreenCtx.font = `${200}px 'Microsoft YaHei'`;
-        this.offscreenCtx.font = `${200}px 'monospace'`;
+        this.fontSize = this._fontSize;
         this.offscreenCtx.textBaseline = 'middle';
     }
 
@@ -155,17 +174,33 @@ export class ParticleDrawer {
 
     private drawText (content: string|string[]) {
         this.ctx.fillStyle = this.fillColor;
+        const ctx = this.offscreenCtx;
         if (typeof content === 'string') {
             content = [content];
         }
 
-        for (const text of content) {
-            
-        }
+        const lintHeight = (this._fontSize + this.lineGap) * DPR;
 
-        const ctx = this.offscreenCtx;
-        const textData = ctx.measureText(content);
-        ctx.fillText(content, ((this.width * DPR - textData.width) / 2), (this.height / 2) * DPR);
+        // const textData = ctx.measureText(content[0]);
+
+        // textData.
+
+        // const startY = content.length;
+
+        // ! 最后+lineHegit 是因为绘制方式是 textBaseline=middle
+        const startY = ((this.height * DPR) - (content.length * lintHeight) - this.lineGap * DPR + lintHeight) / 2;
+        const drawArray = content.map((text, i) => {
+            const {width} = ctx.measureText(text);
+            return {
+                text: text,
+                x: (this.width * DPR - width) / 2,
+                y: startY + (lintHeight * i),
+            };
+        });
+
+        drawArray.forEach(({text, x, y}) => {
+            ctx.fillText(text, x, y);
+        });
     }
     private async drawImage (file: File) {
         if (!['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {

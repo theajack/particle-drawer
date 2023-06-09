@@ -5,7 +5,7 @@
  */
 
 import {css, style} from 'alins-style';
-import {button, div, input, span, $, IReactItem, click, change, mounted} from 'alins';
+import {button, div, input, span, $, IReactItem, click, change, mounted, textarea} from 'alins';
 import {ParticleDrawer} from '../../src/index';
 
 let interval: any;
@@ -132,10 +132,18 @@ function contentBox (draw: ParticleDrawer) {
     const content = $('Hello World!');
     return div('.input-item.func-box',
         span('.input-title[placeholder=Input Something]:Draw Content'),
-        input.model(content)(`.input-el]`),
+        textarea.model(content)(`.input-el]`, style({
+            width: 140,
+            resize: 'vertical',
+            height: 50
+        })),
         btnBox('Draw Text', () => {
             clearTimer();
-            draw.draw(content.value);
+            let v = content.value as any;
+            if (v.includes('\n')) {
+                v = v.split('\n');
+            }
+            draw.draw(v);
         })
     );
 }
