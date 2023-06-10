@@ -1,6 +1,6 @@
 {
     "name": "particle-drawer",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Draw text or pictures with particles.",
     "repository": "git@github.com:theajack/particle-drawer.git",
     "author": "tackchen <theajack@qq.com>",

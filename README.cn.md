@@ -33,6 +33,8 @@ interface Options {
     imgGap?: number, // 绘制图像时的拾取像素间隔。默认值为 10
     fontSize?: number,
     lineGap?: number,
+    moveTime?: number,
+    fontFamily?: string,
 }
 ```
 
@@ -83,4 +85,6 @@ drawer.textGap = 8;
 drawer.imgGap = 12;
 drawer.fontSize = 50;
 drawer.lineGap = 10;
+drawer.moveTime = 500;
+drawer.fontFamily = 'monospace';
 ```

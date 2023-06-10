@@ -7,6 +7,8 @@
 const {
     copyFile, buildPackageJson, writeJsonIntoFile,
     writeFile,
+    exec,
+    resolveRootPath,
 } = require('../utils');
 const pkg = require('../../package.json');
 const {build, builddts} = require('../rollup.base');
@@ -23,6 +25,10 @@ async function main () {
     await builddts();
     buildPackageJson();
     copyFiles();
+
+    if (process.argv.includes('publish')) {
+        await exec(`npm publish ${resolveRootPath('npm')}`);
+    }
 }
 
 

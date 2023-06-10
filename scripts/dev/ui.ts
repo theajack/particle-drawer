@@ -18,7 +18,8 @@ function registTimer (fn: ()=>void, time = 1000) {
 }
 
 css('body')(
-    style.padding(0).margin(0).overflow('hidden'),
+    style.padding(0).margin(0).overflow('hidden').boxSizing('border-box'),
+    ['*', style.boxSizing('border-box')],
     ['.input-item',
         style(`
         margin: 10px 0;
@@ -32,9 +33,10 @@ css('body')(
             vertical-align: text-top;
         `)],
         ['.input-el', style(`
-            height: 20px;
+            height: 25px;
             padding-left: 5px;
             vertical-align: text-top;
+            width: 140px;
         `)],
     ],
     [
@@ -62,13 +64,17 @@ css('body')(
 
 export function renderUI (drawer: ParticleDrawer) {
 
-    const showPanel = $(true);
+    const showPanel = $(false);
+
+    drawer.canvas.addEventListener('click', () => {
+        showPanel.value = false;
+    });
 
     div(
         '.container',
         style.position('fixed').right(10).top(10),
         [
-            button.show(() => !showPanel.value)('.btn.large:Open Panel',
+            button.show(() => !showPanel.value)('.btn.large:Setting',
                 click(() => {showPanel.value = !showPanel.value;})
             ),
             panel(drawer, showPanel),
@@ -77,14 +83,13 @@ export function renderUI (drawer: ParticleDrawer) {
 }
 
 function panel (drawer: ParticleDrawer, showPanel: IReactItem) {
-
-
+    const closePanel = () => {showPanel.value = false;};
     return div.show(showPanel)('.panel',
         style({
             position: 'absolute',
             top: 0,
             right: 0,
-            backgroundColor: '#eeee',
+            backgroundColor: '#eeeb',
             width: 300,
             padding: 10,
         }),
@@ -95,10 +100,12 @@ function panel (drawer: ParticleDrawer, showPanel: IReactItem) {
         attributeBox('textGap', drawer),
         attributeBox('imgGap', drawer),
         attributeBox('particleRadius', drawer),
-        contentBox(drawer),
-        imageBox(drawer),
+        attributeBox('moveTime', drawer),
+        attributeBox('fontFamily', drawer),
+        contentBox(drawer, closePanel),
+        imageBox(drawer, closePanel),
 
-        funcArea(drawer),
+        funcArea(drawer, closePanel),
         
 
         span('.close:×',
@@ -130,7 +137,7 @@ function attributeBox (title: string, drawer: ParticleDrawer) {
     );
 }
 
-function contentBox (draw: ParticleDrawer) {
+function contentBox (draw: ParticleDrawer, closePanel: ()=>void) {
     const content = $('Hello World!\nBe Happy!');
     return div('.input-item.func-box',
         span('.input-title[placeholder=Input Something]:Draw Content'),
@@ -146,11 +153,12 @@ function contentBox (draw: ParticleDrawer) {
                 v = v.split('\n');
             }
             draw.draw(v);
+            closePanel();
         })
     );
 }
 
-function imageBox (draw: ParticleDrawer) {
+function imageBox (draw: ParticleDrawer, closePanel: ()=>void) {
     let inputEl: HTMLInputElement;
     const fileName = $('Draw Image');
     return div('.input-item.func-box',
@@ -173,6 +181,7 @@ function imageBox (draw: ParticleDrawer) {
                 clearTimer();
                 try {
                     draw.draw(file);
+                    closePanel();
                 } catch (e) {
                     alert('Please choose a image');
                 }
@@ -181,13 +190,14 @@ function imageBox (draw: ParticleDrawer) {
     );
 }
 
-function funcArea (drawer: ParticleDrawer) {
+function funcArea (drawer: ParticleDrawer, closePanel: ()=>void) {
     return div('.input-item.func-box',
         style.textAlign('center').marginTop(10),
         button(`.btn:Clock`, click(() => {
             const fn = () => {drawer.draw(new Date().toLocaleString().substring(9));};
             fn();
             registTimer(fn, 1000);
+            closePanel();
         }))
     );
 }

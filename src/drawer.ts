@@ -6,6 +6,20 @@ import {adapteSize, countRadius, createImage, DPR, getDrawType} from './utils';
  * @Date: 2023-06-03 17:33:31
  * @Description: Coding something
  */
+
+export interface IDrawerOptions {
+    container?: string | Element,
+    width?: number,
+    height?: number,
+    particleRadius?: number,
+    textGap?: number,
+    textFillColor?: string,
+    imgGap?: number,
+    fontSize?: number,
+    lineGap?: number,
+    moveTime?: number,
+    fontFamily?: string,
+}
 export class ParticleDrawer {
 
     width: number;
@@ -36,10 +50,19 @@ export class ParticleDrawer {
     get fontSize () {return this._fontSize;};
     set fontSize (value: number) {
         this._fontSize = value;
-        this.offscreenCtx.font = `${value * DPR}px 'monospace'`;
+        this.setFont();
+    }
+
+    private _fontFamily = 'monospace';
+    get fontFamily () {return this._fontFamily;};
+    set fontFamily (value: string) {
+        this._fontFamily = value;
+        this.setFont();
     }
 
     lineGap = 10;
+
+    moveTime = 500;
 
     constructor ({
         container = document.body,
@@ -51,17 +74,9 @@ export class ParticleDrawer {
         textFillColor,
         fontSize,
         lineGap,
-    }: {
-        container?: string | Element,
-        width?: number,
-        height?: number,
-        particleRadius?: number,
-        textGap?: number,
-        textFillColor?: string,
-        imgGap?: number,
-        fontSize?: number,
-        lineGap?: number,
-    } = {}) {
+        moveTime,
+        fontFamily,
+    }: IDrawerOptions = {}) {
         if (typeof container === 'string') {
             const el = document.querySelector(container);
             if (!el) throw new Error(`Cannot find container ${el}`);
@@ -72,8 +87,10 @@ export class ParticleDrawer {
         if (textGap) this.textGap = textGap;
         if (imgGap) this.imgGap = imgGap;
         if (textFillColor) this.textFillColor = textFillColor;
-        if (fontSize) this._fontSize = fontSize;
         if (lineGap) this.lineGap = lineGap;
+        if (moveTime) this.moveTime = moveTime;
+        if (fontSize) this._fontSize = fontSize;
+        if (fontFamily) this._fontFamily = fontFamily;
 
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -88,12 +105,21 @@ export class ParticleDrawer {
         this.particles.push(new Particle(this));
     }
 
+    private setFont () {
+        this.offscreenCtx.font = `${this.fontSize * DPR}px ${this.fontFamily}`;
+    }
+
     private _initOffscreenCanvas () {
         this.offscreenCanvas = document.createElement('canvas');
         this.offscreenCtx = this.offscreenCanvas.getContext('2d', {
             willReadFrequently: true,
         }) as CanvasRenderingContext2D;
 
+        // this.offscreenCanvas.style.width = this.width + 'px';
+        // this.offscreenCanvas.style.height = this.height + 'px';
+        // this.offscreenCanvas.style.position = 'fixed';
+        // this.offscreenCanvas.style.top = '10000px';
+        // document.body.appendChild(this.offscreenCanvas);
     }
 
     private loop () {
@@ -183,6 +209,7 @@ export class ParticleDrawer {
         });
 
         drawArray.forEach(({text, x, y}) => {
+            // console.log(text, x, y, this.canvas.width, this.canvas.height, this.width, this.height);
             ctx.fillText(text, x, y);
         });
     }
@@ -210,17 +237,21 @@ export class ParticleDrawer {
 
     private getPoints (isText: boolean) {
         const {width, height, data} = this.offscreenCtx.getImageData(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
-        // console.log(width, height);
-        const gap = (isText ? this.textGap : this.imgGap) * DPR;
+        
+        // console.log(width, height, data.length);
+        const gap = Math.round((isText ? this.textGap : this.imgGap) * DPR);
         const points: {x:number, y:number, color?: string}[] = [];
+        // console.log(Array.from(data).slice(0, 200), data.length);
         for (let x = 0; x < width; x += gap) {
             for (let y = 0; y < height; y += gap) {
                 const index = (x + y * width) * 4;
+                // console.log(index);
                 const r = data[index];
                 const g = data[index + 1];
                 const b = data[index + 2];
                 const a = data[index + 3];
-
+                // if (index < 200)
+                //     console.log(x, y, width, index, r, g, b, a);
                 if (isText) {
                     if (r === 0 && g === 0 && b === 0 && a === 255) {
                         points.push({x, y});
@@ -232,6 +263,7 @@ export class ParticleDrawer {
                 }
             }
         }
+        // console.log('points.length', points.length);
         return points;
     }
 }

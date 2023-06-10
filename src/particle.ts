@@ -16,10 +16,6 @@ export class Particle {
 
     color: string;
 
-    // times = Math.round(500 / 16.6667);
-
-    time = 500;
-
     isActive = false;
 
     tick: (()=>void)|null;
@@ -63,12 +59,13 @@ export class Particle {
         this.isActive = true;
         const sx = this.x;
         const sy = this.y;
-        const xspeed = (x - this.x) / this.time;
-        const yspeed = (y - this.y) / this.time;
+        const time = this.drawer.moveTime;
+        const xspeed = (x - this.x) / time;
+        const yspeed = (y - this.y) / time;
         const startTime = Date.now();
         this.tick = () => {
             const t = Date.now() - startTime;
-            if (t >= this.time) {
+            if (t >= time) {
                 this.setPos(x, y);
                 this.tick = null;
                 onend?.();
